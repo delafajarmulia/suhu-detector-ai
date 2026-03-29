@@ -13,10 +13,10 @@ Data dikumpulkan dari sensor IoT yang dibangun secara mandiri, mencatat **rata-r
 ## 📁 Struktur Repo
 
 ```
-suhu-detector-ai/
-├── weather_analysis_1.ipynb   # Notebook EDA & prediksi utama
-├── DataCuaca_-_Data.csv       # Dataset mentah dari sensor IoT
-└── README.md
+├── 📁 dataset
+│   └── 📄 DataCuaca-Data-1.csv
+├── 📝 README.md
+└── 📄 weather_analysis_1.ipynb
 ```
 
 ---
@@ -94,10 +94,10 @@ pandas · numpy · matplotlib · seaborn · scikit-learn · statsmodels · plotl
 
 ## 📈 Hasil Singkat
 
-| Model | MAE (°C) | R² |
-|---|---|---|
-| Regresi Linear | - | - |
-| ARIMA(2,1,2) | - | - |
+| Model | MAE | RMSE | R² |
+|---|---|---|---|
+| Regresi Linear (dengan fitur lag) | 0.0875°C | 0.1233°C | 0.9759 |
+| ARIMA(2,1,2) Walk-Forward | 0.0556°C | 0.1205°C | 0.9769 |
 
 ---
 
