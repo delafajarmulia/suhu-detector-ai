@@ -1,22 +1,34 @@
-# 🌡️ EDA Data Cuaca IoT — Suhu Detector AI
+# 🌡️ Analisis & Prediksi Data Cuaca IoT
 
-Proyek analisis data **time series** cuaca dari sensor IoT buatan sendiri, sebagai bagian dari tugas mata kuliah **Kecerdasan Buatan**.
+> Proyek Mata Kuliah **Kecerdasan Buatan** — Kelompok 1, Kelas TI-1C
 
----
-
-## 📡 Tentang Proyek
-
-Data dikumpulkan dari sensor IoT yang dibangun secara mandiri, mencatat **rata-rata suhu, kelembapan, dan intensitas cahaya setiap 5 menit** secara otomatis ke Google Sheets. Data kemudian diekspor ke CSV dan dianalisis menggunakan Python di Google Colab.
+Analisis data time series dari sensor IoT yang dipasang di **teras outdoor** menggunakan Python. Mencakup eksplorasi data (EDA), penanganan missing values akibat gangguan jaringan, hingga prediksi suhu menggunakan Regresi Linear dan ARIMA.
 
 ---
 
-## 📁 Struktur Repo
+## 👥 Anggota Kelompok
+
+| No | Nama | NIM |
+|----|------|-----|
+| 1  | *Azka Galuh Basuki* | *4.33.25.2.04* |
+| 2  | *Dela Fajar Mulia* | *4.33.25.2..07* |
+| 3  | *Jatmiko Satrio Wibowo* | *4.33.25.2.11* |
+| 4  | *Muhammad Fadhil* | *4.33.25.2.15* |
+| 5  | *Ulfan Nayaka Dipta* | *4.33.25.2.23* |
+
+> **Kelas:** TI-1C &nbsp;|&nbsp; **Kelompok:** 1 &nbsp;|&nbsp; **Mata Kuliah:** Kecerdasan Buatan
+
+---
+
+## 📁 Struktur Repository
 
 ```
 ├── 📁 dataset
-│   └── 📄 DataCuaca-Data-1.csv
+│   ├── 📄 DataCuaca-Data-1.csv
+│   └── 📄 sensor_data_2.csv
 ├── 📝 README.md
-└── 📄 weather_analysis_1.ipynb
+├── 📄 weather_analysis_1.ipynb
+└── 📄 weather_analysis_2.ipynb
 ```
 
 ---
@@ -26,81 +38,134 @@ Data dikumpulkan dari sensor IoT yang dibangun secara mandiri, mencatat **rata-r
 | Komponen | Keterangan |
 |---|---|
 | Sensor suhu & kelembapan | DHT11 |
-| Sensor cahaya | LDR |
+| Sensor cahaya | LDR Module |
 | Interval pengambilan data | 5 menit |
-| Penyimpanan | Google Sheets → CSV |
-| Lokasi sensor | Dalam ruangan (kamar) |
+| Penyimpanan | PostgreeSQL (Supabase) |
+| Lokasi sensor | Teras |
 
 ---
 
 ## 📊 Dataset
 
-- **Jumlah record:** 328 baris
-- **Rentang waktu:** 25 Maret 2026 – 27 Maret 2026 (~2.7 hari)
-- **Kolom:**
+**File:** `sensor_data_rows.csv`
 
 | Kolom | Tipe | Keterangan |
-|---|---|---|
-| `timestamp` | datetime | Waktu pencatatan |
-| `suhu` | float | Suhu dalam °C |
+|-------|------|-----------|
+| `id` | int | ID unik record |
+| `created_at` | datetime | Timestamp UTC (GMT+0) dari backend Supabase |
+| `suhu` | float | Suhu udara (°C) |
 | `kelembapan` | float | Kelembapan relatif (%) |
-| `cahaya` | int | Intensitas cahaya (lux) |
-| `kondisi` | string | Label: `TERANG` / `GELAP` |
+| `cahaya` | int | Nilai ADC sensor LDR (0–4095) |
+| `kondisi` | string | `TERANG` / `GELAP` — ditentukan firmware |
 
-### ⚠️ Keterbatasan Data
+### ⚠️ Catatan Penting Sensor
 
-- **Missing data:** Terdapat 49 gap akibat koneksi internet yang tidak stabil, ditangani dengan interpolasi linear (suhu & kelembapan) dan forward fill (cahaya)
-- **Cahaya artifisial:** Karena sensor berada di dalam kamar, nilai cahaya malam hari bisa tinggi akibat lampu kamar menyala — sudah di-flag di notebook
+- **Lokasi:** Teras outdoor — terpapar sinar matahari langsung
+- **Periode:** 13–18 April 2026 · 1.256 record · interval ~5 menit
+- **Timezone:** Kolom `created_at` dalam **UTC (GMT+0)**, dikonversi ke **WIB (GMT+7)** saat preprocessing
+- **Sensor LDR terbalik:** Nilai `cahaya` raw **tinggi = gelap**, **rendah = terang** (karakteristik fisika LDR). Koreksi dilakukan dengan `cahaya_terkoreksi = 4095 - cahaya_raw`
+- **Gap data:** Terdapat gap ~15.4 jam (13–14 Apr) akibat gangguan jaringan, serta banyak jitter interval karena latensi
 
 ---
 
-## 📓 Isi Notebook
+## 📓 Notebook
 
-1. **Import Library** — pandas, numpy, matplotlib, seaborn, statsmodels, sklearn
-2. **Load & Inspect Data** — overview data mentah
-3. **Preprocessing** — parsing timestamp, konversi desimal, sorting
-4. **Handling Missing Values** — reindex 5 menit, deteksi gap, imputasi
-5. **Feature Engineering** — ekstraksi jam, flag malam, deteksi cahaya artifisial
-6. **EDA**
-   - Univariat: distribusi tiap variabel
-   - Time series: tren temporal + rolling mean
-   - Bivariat: heatmap korelasi, scatter plot
-   - Multivariat: pola harian (diurnal pattern), pair plot
-7. **Deteksi Outlier** — IQR method + boxplot
-8. **Prediksi Suhu**
-   - Model A: Regresi Linear (fitur temporal + sin/cos)
-   - Model B: ARIMA(2,1,2)
-   - Perbandingan MAE, RMSE, R²
-9. **Kesimpulan**
+### `weather_analysis_2.ipynb` — Analisis Utama
+
+| # | Bagian | Deskripsi |
+|---|--------|-----------|
+| 1 | Import Library | pandas, numpy, matplotlib, seaborn, statsmodels, sklearn |
+| 2 | Load & Inspect | Muat data, cek struktur dan tipe kolom |
+| 3 | Preprocessing | Konversi UTC→WIB, koreksi nilai LDR, sorting |
+| 4 | Audit Kualitas Data | Deteksi gap jaringan, distribusi jitter interval |
+| 5 | Handling Missing Values | Reindex 5 menit, interpolasi linear, forward fill |
+| 6 | Feature Engineering | Fitur temporal, siklus sin/cos, flag siang/malam |
+| 7 | EDA | Univariat · Bivariat · Multivariat · Time-Series Story · Transisi siang-malam |
+| 8 | Deteksi Outlier | IQR method + Z-score, visualisasi pada timeline |
+| 9 | Prediksi Suhu | Regresi Linear (lag) & ARIMA(2,1,2) Walk-Forward |
+| 10 | Kesimpulan | Ringkasan temuan, keterbatasan, rekomendasi |
+
+---
+
+## 🔍 Temuan EDA
+
+| Variabel | Temuan |
+|----------|--------|
+| **Suhu** | Rentang 24.1–47.9°C · Puncak rata-rata jam 15:00 WIB (~40°C) · Terendah jam 05:00 WIB (~25°C) |
+| **Kelembapan** | Korelasi negatif kuat dengan suhu (r = −0.97) · Malam >95% · Siang <45% |
+| **Cahaya** | Setelah koreksi LDR: korelasi positif dengan suhu (r ≈ +0.72) — masuk akal secara fisik |
+| **Transisi** | Sensor GELAP→TERANG sekitar jam 06:00 WIB, TERANG→GELAP sekitar jam 18:00 WIB |
+
+---
+
+## 🤖 Hasil Prediksi
+
+| Model | MAE | RMSE | R² |
+|-------|-----|------|----|
+| Regresi Linear (Lag + Siklus + Cahaya) | ~0.41°C | ~0.58°C | ~0.95 |
+| ARIMA(2,1,2) Walk-Forward | ~0.39°C | ~0.60°C | ~0.95 |
+
+Kedua model mencapai **R² > 0.95**. Kunci keberhasilan: **fitur lag** — suhu 5–15 menit sebelumnya adalah prediktor terkuat (autokorelasi tinggi pada data interval pendek).
 
 ---
 
 ## 🚀 Cara Menjalankan
 
-1. Buka [Google Colab](https://colab.research.google.com)
-2. Load notebook dari repo ini: **File → Open notebook → GitHub → cari repo ini**
-3. Upload file `DataCuaca_-_Data.csv` ke sidebar Files Colab
-4. Jalankan sel dari atas ke bawah (**Runtime → Run all**)
+### 1. Clone repository
 
-### Requirements
-
-Semua library sudah tersedia di Google Colab secara default. Tidak perlu install tambahan.
-
+```bash
+git clone https://github.com/delafajarmulia/suhu-detector-ai.git
+cd suhu-detector-ai
 ```
-pandas · numpy · matplotlib · seaborn · scikit-learn · statsmodels · plotly
+
+### 2. Install dependencies
+
+```bash
+pip install pandas numpy matplotlib seaborn statsmodels scikit-learn jupyter
 ```
+
+### 3. Jalankan notebook
+
+```bash
+jupyter notebook weather_analysis_2.ipynb
+```
+
+> Pastikan file `sensor_data_2.csv` berada di direktori yang sama dengan notebook.
 
 ---
 
-## 📈 Hasil Singkat
+## 🛠️ Tech Stack
 
-| Model | MAE | RMSE | R² |
-|---|---|---|---|
-| Regresi Linear (dengan fitur lag) | 0.0875°C | 0.1233°C | 0.9759 |
-| ARIMA(2,1,2) Walk-Forward | 0.0556°C | 0.1205°C | 0.9769 |
+![Python](https://img.shields.io/badge/Python-3.9+-3776AB?logo=python&logoColor=white)
+![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-F37626?logo=jupyter&logoColor=white)
+![pandas](https://img.shields.io/badge/pandas-150458?logo=pandas&logoColor=white)
+![scikit--learn](https://img.shields.io/badge/scikit--learn-F7931E?logo=scikit-learn&logoColor=white)
+
+| Library | Kegunaan |
+|---------|---------|
+| `pandas` | Manipulasi data, reindex, resample |
+| `numpy` | Komputasi numerik, fitur siklus |
+| `matplotlib` & `seaborn` | Visualisasi statis |
+| `statsmodels` | Model ARIMA, ACF/PACF |
+| `scikit-learn` | Regresi Linear, evaluasi model |
 
 ---
 
-## 👤 Author
+## ⚠️ Keterbatasan
 
-**Kelompok 1**  
+- Gap ~15.4 jam diisi interpolasi — bukan data pengukuran nyata
+- 5 hari pengamatan belum cukup untuk menangkap pola mingguan
+- Suhu ekstrem (~47°C) kemungkinan akibat paparan langsung ke badan sensor, bukan suhu udara
+- Sensor LDR tidak terkalibrasi ke satuan lux standar
+
+---
+
+## 📌 Lisensi
+
+Proyek ini dibuat untuk keperluan akademik. Bebas digunakan sebagai referensi pembelajaran.
+
+---
+
+<p align="center">
+  Dibuat dengan ❤️ oleh <strong>Kelompok 1 · Kelas TI-1C</strong> · 2026
+</p>
