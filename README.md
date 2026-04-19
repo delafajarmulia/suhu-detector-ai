@@ -103,5 +103,4 @@ pandas · numpy · matplotlib · seaborn · scikit-learn · statsmodels · plotl
 
 ## 👤 Author
 
-**Dela Fajar Mulia**  
-Mahasiswa — Mata Kuliah Kecerdasan Buatan
+**Kelompok 1**  
