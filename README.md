@@ -131,8 +131,8 @@ Analisis data time series dari sensor IoT yang dipasang di **teras outdoor** men
 ### 1. Clone repository
 
 ```bash
-git clone https://github.com/delafajarmulia/suhu-detector-ai.git
-cd suhu-detector-ai
+git clone https://github.com/delafajarmulia/AtmoMind-AI.git
+cd AtmoMind-AI
 ```
 
 ### 2. Install dependencies
