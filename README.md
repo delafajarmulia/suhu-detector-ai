@@ -24,10 +24,16 @@ Analisis data time series dari sensor IoT yang dipasang di **teras outdoor** men
 
 ```
 ├── 📁 dataset
-│   ├── 📄 sensor_data_3.csv
-│   ├── 📄 open-meteo-7_07S110_45E234m.csv
-│   └── 📄 banyumanik__semarang__ind____2026-04-13_to_2026-04-22.csv
+│   ├── 📁 externals
+│   │   ├── 📄 open-meteo.csv
+│   │   └── 📄 visual-crossing.csv
+│   └── 📁 sensors
+│       ├── 📄 DataCuaca-Data-1.csv
+│       ├── 📄 sensor_data_2.csv
+│       └── 📄 sensor_data_3.csv
 ├── 📝 README.md
+├── 📄 weather_analysis_1.ipynb
+├── 📄 weather_analysis_2.ipynb
 └── 📄 weather_analysis_3.ipynb
 ```
 
@@ -62,8 +68,8 @@ Analisis data time series dari sensor IoT yang dipasang di **teras outdoor** men
 
 | File | Sumber | Keterangan |
 |------|--------|-----------|
-| `open-meteo-7_07S110_45E234m.csv` | Open-Meteo API | Suhu, kelembapan, radiasi, tutupan awan — hourly, GMT+7 |
-| `banyumanik__semarang__ind____...csv` | Visual Crossing | Suhu, kelembapan, solar radiation, angin, tekanan — hourly, GMT+7 |
+| `open-meteo.csv` | Open-Meteo API | Suhu, kelembapan, radiasi, tutupan awan — hourly, GMT+7 |
+| `visual-crossing.csv` | Visual Crossing | Suhu, kelembapan, solar radiation, angin, tekanan — hourly, GMT+7 |
 
 ### ⚠️ Catatan Penting Sensor
 
